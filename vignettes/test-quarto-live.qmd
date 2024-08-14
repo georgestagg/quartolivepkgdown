@@ -1,0 +1,63 @@
+---
+title: Testing Quarto Live Vignettes
+description: > 
+  Loading and using Quarto Live with {pkgdown}
+vignette: >
+  %\VignetteIndexEntry{Testing Quarto Live Vignettes}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk: 
+    collapse: true
+    comment: '#>'
+format:
+  html:
+    ojs-engine: true
+    filters:
+      - _extensions/r-wasm/live/live.lua
+    webr:
+      render-df: gt
+      packages:
+        - dplyr
+---
+
+{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
+
+## Some title
+
+This is a Quarto vignette. I have installed Quarto Live using:
+
+```
+quarto add r-wasm/quarto-live
+```
+
+```{webr}
+library(gt)
+
+countrypops |>
+  dplyr::filter(year == 2021, population < 100000) |>
+  dplyr::select(country_code_2, population) |>
+  dplyr::mutate(population_class = cut(
+    population,
+    breaks = scales::breaks_pretty(n = 5)(population)
+    )
+  ) |>
+  dplyr::group_by(population_class) |>
+  dplyr::summarize(
+    countries = paste0(country_code_2, collapse = ",")
+  ) |>
+  dplyr::arrange(desc(population_class)) |>
+  gt() |>
+  tab_header(title = "Countries with Small Populations") |>
+  fmt_flag(columns = countries) |>
+  fmt_bins(
+    columns = population_class,
+    fmt = ~ fmt_integer(., suffixing = TRUE)
+  ) |>
+  cols_label(
+    population_class = "Population Range",
+    countries = "Countries"
+  ) |>
+  cols_width(population_class ~ px(150))
+```
+
